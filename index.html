@@ -144,6 +144,23 @@ button{font:inherit;color:inherit}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
 .seg button{padding:10px;text-align:center;font-size:12.5px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-family:var(--body)}
 .seg button.on{border-color:var(--accent);color:var(--accent);font-weight:700;background:var(--accent2)}
+.rsvp{margin-top:18px}
+.rfld{display:block;margin-bottom:10px}
+.rfld span{display:block;font-family:var(--head);font-size:11px;letter-spacing:.14em;color:var(--accent);margin:0 2px 6px}
+.rfld input{width:100%;padding:11px 14px;font-size:16px;font-family:var(--body);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);-webkit-appearance:none;appearance:none}
+.rfld input::placeholder{color:var(--muted);opacity:.75;font-size:14px}
+.rfld input:focus-visible,.stp button:focus-visible,.rlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rcnt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 6px 8px 14px;margin:10px 0 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);font-size:12.5px}
+.rcnt small{color:var(--muted);font-size:11px;margin-left:4px}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1;cursor:pointer;padding:0}
+.stp button:disabled{opacity:.35;cursor:default}
+.stp output{min-width:30px;text-align:center;font-family:var(--head);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.rnote{font-size:12px;color:#A6453B;text-align:center;margin:0 0 10px}
+.rlink{display:block;width:100%;margin-top:12px;padding:4px;border:0;background:none;text-align:center;font-family:var(--body);font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.rdone{margin-top:18px;padding:22px 16px 14px;text-align:center;border:1px solid var(--accent2);border-radius:var(--radius);background:var(--surface)}
+.rdone b{display:block;font-family:var(--head);font-size:14.5px;font-weight:600;color:var(--accent);margin-bottom:6px}
+.rdone span{display:block;font-size:12.5px;color:var(--ink)}
 .acc{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-bottom:8px;overflow:hidden}
 .acc summary{list-style:none;cursor:pointer;padding:13px 16px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 .acc summary::-webkit-details-marker{display:none}
@@ -220,11 +237,20 @@ button{font:inherit;color:inherit}
     <div class="eb">RSVP</div>
     <h2 class="ttl" id="rsvpTitle"></h2>
     <p class="p" id="rsvpMsg"></p>
-    <div id="rsvpChoices">
-      <div class="seg" data-seg><button type="button" class="on">신랑측</button><button type="button">신부측</button></div>
-      <div class="seg" data-seg><button type="button" class="on">참석</button><button type="button">미참석</button></div>
+    <form class="rsvp" id="rsvpForm" novalidate>
+      <label class="rfld"><span>성함</span><input type="text" id="rsvpName" name="name" autocomplete="name" maxlength="30" placeholder="성함을 적어 주세요"></label>
+      <div class="seg" data-seg="side" role="group" aria-label="어느 쪽 하객이신가요"><button type="button" class="on" data-v="신랑측">신랑측</button><button type="button" data-v="신부측">신부측</button></div>
+      <div class="seg" data-seg="attend" role="group" aria-label="참석 여부"><button type="button" class="on" data-v="참석">참석</button><button type="button" data-v="미참석">미참석</button></div>
+      <div class="rcnt" id="rsvpCountRow"><span>참석 인원 <small>본인 포함</small></span><div class="stp"><button type="button" id="rsvpMinus" aria-label="인원 줄이기">−</button><output id="rsvpCount" aria-live="polite">1</output><button type="button" id="rsvpPlus" aria-label="인원 늘리기">+</button></div></div>
+      <p class="rnote" id="rsvpNote" role="alert" hidden></p>
+      <button type="submit" class="btn pri full" id="rsvpBtn">참석 의사 전달하기</button>
+      <a class="rlink" id="rsvpFallback" target="_blank" rel="noopener" hidden>전송이 어려우면 구글 폼으로 보내기</a>
+    </form>
+    <div class="rdone" id="rsvpDone" hidden>
+      <b>전달되었습니다. 감사합니다.</b>
+      <span id="rsvpSummary"></span>
+      <button type="button" class="rlink" id="rsvpAgain">내용을 고쳐서 다시 보내기</button>
     </div>
-    <div class="btns" style="margin:14px 0 0"><button type="button" class="btn pri full" id="rsvpBtn">참석 의사 전달하기</button></div>
   </section>
 
   <section class="sec" id="secAccount">
@@ -251,7 +277,7 @@ button{font:inherit;color:inherit}
 
 <script src="content.js"></script>
 <script>
-(function(){
+function startInvitation(preview){
   var D = window.INVITATION;
   function $(id){ return document.getElementById(id); }
   if(!D){
@@ -408,14 +434,43 @@ button{font:inherit;color:inherit}
   (D.transport || []).forEach(function(t){ var li = el('li'); li.appendChild(el('b', '', t.label || '')); var sp = el('span', '', t.text || ''); if(t.note) sp.appendChild(el('small', '', t.note)); li.appendChild(sp); tr.appendChild(li); });
   if(!tr.children.length) tr.hidden = true;
 
-  /* ---------- rsvp ---------- */
-  var R = D.rsvp || {};
+  /* ---------- rsvp: sends to a Google Form only when the guest taps the button ---------- */
+  var R = D.rsvp || {}, RF = R.form || {};
   if(R.show === false){ $('secRsvp').remove(); }
   else {
     $('rsvpTitle').textContent = R.title || ''; $('rsvpMsg').textContent = R.message || '';
-    if(R.formUrl) $('rsvpChoices').hidden = true;
-    document.querySelectorAll('[data-seg]').forEach(function(g){ var bs = g.querySelectorAll('button'); bs.forEach(function(b){ b.setAttribute('aria-pressed', b.classList.contains('on')); b.addEventListener('click', function(){ bs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }); }); });
-    $('rsvpBtn').addEventListener('click', function(){ if(R.formUrl){ window.open(R.formUrl, '_blank', 'noopener'); } else { toast('참석 조사는 아직 연결 전입니다'); } });
+    var rForm = $('rsvpForm'), rDone = $('rsvpDone'), rName = $('rsvpName'), rNote = $('rsvpNote'), rBtn = $('rsvpBtn'), rFall = $('rsvpFallback');
+    var rCount = 1, rBusy = false, RKEY = 'wedding-rsvp', rReady = !!(RF.id && RF.name && RF.side && RF.attend && RF.count);
+    var segVal = function(name){ var on = rForm.querySelector('[data-seg="' + name + '"] .on'); return on ? on.getAttribute('data-v') : ''; };
+    var segSet = function(name, v){ rForm.querySelectorAll('[data-seg="' + name + '"] button').forEach(function(b){ var on = b.getAttribute('data-v') === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); };
+    var drawCount = function(){ $('rsvpCount').textContent = rCount; $('rsvpMinus').disabled = rCount <= 1; $('rsvpPlus').disabled = rCount >= 10; $('rsvpCountRow').hidden = segVal('attend') !== '참석'; };
+    var rValues = function(){ var at = segVal('attend'); return { name: rName.value.replace(/\s+/g, ' ').trim(), side: segVal('side'), attend: at, count: at === '참석' ? rCount : 0 }; };
+    var rParams = function(v){ var q = new URLSearchParams(); q.append(RF.name, v.name); q.append(RF.side, v.side); q.append(RF.attend, v.attend); q.append(RF.count, String(v.count)); return q; };
+    var rUrl = function(kind){ return 'https://docs.google.com/forms/d/e/' + RF.id + '/' + kind; };
+    var rShowDone = function(v){ $('rsvpSummary').textContent = [v.name, v.side, v.attend === '참석' ? '참석 ' + v.count + '명' : '미참석'].join(' · '); rForm.hidden = true; rDone.hidden = false; };
+    var rSay = function(msg){ rNote.textContent = msg; rNote.hidden = !msg; };
+    rForm.querySelectorAll('[data-seg]').forEach(function(g){ g.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', b.classList.contains('on') ? 'true' : 'false'); b.addEventListener('click', function(){ segSet(g.getAttribute('data-seg'), b.getAttribute('data-v')); drawCount(); }); }); });
+    $('rsvpMinus').addEventListener('click', function(){ if(rCount > 1){ rCount--; drawCount(); } });
+    $('rsvpPlus').addEventListener('click', function(){ if(rCount < 10){ rCount++; drawCount(); } });
+    rName.addEventListener('input', function(){ rSay(''); });
+    if(rReady){ rFall.hidden = false; rFall.addEventListener('click', function(){ rFall.href = rUrl('viewform') + '?usp=pp_url&' + rParams(rValues()).toString(); }); rFall.href = rUrl('viewform'); }
+    rForm.addEventListener('submit', function(e){
+      e.preventDefault(); if(rBusy) return;
+      var v = rValues();
+      if(!v.name){ rSay('성함을 적어 주세요'); rName.focus(); return; }
+      if(preview){ toast('미리보기에서는 전송되지 않습니다'); return; }
+      if(!rReady){ toast('참석 조사는 아직 연결 전입니다'); return; }
+      rBusy = true; rBtn.disabled = true; rBtn.textContent = '보내는 중…'; rSay('');
+      var finish = function(){ rBusy = false; rBtn.disabled = false; rBtn.textContent = '참석 의사 전달하기'; };
+      fetch(rUrl('formResponse'), { method: 'POST', mode: 'no-cors', body: rParams(v) }).then(function(){
+        finish(); try{ localStorage.setItem(RKEY, JSON.stringify(v)); }catch(e){} rShowDone(v);
+      }, function(){
+        finish(); rSay('전송하지 못했습니다. 잠시 뒤 다시 누르거나 아래 구글 폼으로 보내 주세요.');
+      });
+    });
+    $('rsvpAgain').addEventListener('click', function(){ rDone.hidden = true; rForm.hidden = false; rName.focus(); });
+    drawCount();
+    if(!preview){ try{ var sent = JSON.parse(localStorage.getItem(RKEY) || 'null'); if(sent && sent.name){ rName.value = sent.name; segSet('side', sent.side); segSet('attend', sent.attend); if(sent.count >= 1) rCount = Math.min(10, sent.count); drawCount(); rShowDone(sent); } }catch(e){} }
   }
 
   /* ---------- accounts ---------- */
@@ -455,6 +510,17 @@ button{font:inherit;color:inherit}
   $('endLettering').textContent = E.lettering || '';
   $('endNames').textContent = (G.name || '') + ' ♡ ' + (B.name || '');
   $('endMsg').textContent = E.message || '';
+}
+/* Normal visit: draw right away. Inside the admin preview frame: wait for the unsaved content, then draw. */
+(function(){
+  var inPreview = /[?&]preview=1(&|$)/.test(location.search) && window.parent !== window;
+  if(!inPreview){ startInvitation(false); return; }
+  window.addEventListener('message', function onMsg(e){
+    if(e.origin !== location.origin || !e.data || e.data.type !== 'invitation-preview') return;
+    window.removeEventListener('message', onMsg);
+    window.INVITATION = e.data.content; startInvitation(true);
+  });
+  window.parent.postMessage({ type: 'invitation-preview-ready' }, location.origin);
 })();
 </script>
 </body>
