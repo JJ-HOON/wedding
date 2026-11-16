@@ -108,10 +108,10 @@ window.INVITATION = {
       "photos/gallery/p20261117002539-29.jpg",
       "photos/gallery/p20261117002539-21.jpg",
       "photos/gallery/p20261117002539-22.jpg",
-      "photos/gallery/p20261117002539-23.jpg",
       "photos/gallery/p20261117002539-24.jpg",
-      "photos/gallery/p20261117002539-25.jpg",
       "photos/gallery/p20261117002539-26.jpg",
+      "photos/gallery/p20261117002539-23.jpg",
+      "photos/gallery/p20261117002539-25.jpg",
     ],
   },
 
