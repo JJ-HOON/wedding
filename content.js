@@ -33,8 +33,8 @@ window.INVITATION = {
     relation: "장녀",            // 장녀 · 차녀 · 딸
     intro: `그 누가 뭐래도 너무나도 
 예쁜 피아니스트.
-신랑에게는 말괄량이 삐삐`,
-    photo: "photos/bride.jpg",
+반전매력, 말괄량이 삐삐`,
+    photo: "photos/bride-20261117015554.jpg",
   },
 
   /* ── 예식 일시 (날짜만 바꾸면 달력과 남은 날짜가 자동으로 바뀝니다) ── */
