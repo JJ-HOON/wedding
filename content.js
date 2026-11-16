@@ -20,7 +20,7 @@ window.INVITATION = {
     relation: "장남",            // 장남 · 차남 · 아들
     intro: `항상 내 편이 되어주는 사람.
 부산 상남자, 테토남이지만
-내 앞에서는 어린아이`,
+신부에게는 귀여운 어린아이`,
     photo: "photos/groom.jpg",
   },
 
@@ -33,7 +33,7 @@ window.INVITATION = {
     relation: "장녀",            // 장녀 · 차녀 · 딸
     intro: `그 누가 뭐래도 너무나도 
 예쁜 피아니스트.
-내 앞에서는 말괄량이 삐삐`,
+신랑에게는 말괄량이 삐삐`,
     photo: "photos/bride.jpg",
   },
 
@@ -45,7 +45,7 @@ window.INVITATION = {
 
   /* ── 예식장 ───────────────────────────────────────────────── */
   venue: {
-    name: "그랜드모먼트",
+    name: "그랜드모먼트 6층 시그니처홀",
     city: "부산",
     hall: "6층 시그니처홀",                       // 홀 이름과 층. 비워 두면 표시하지 않습니다
     address: "부산광역시 남구 황령대로 401-9 (대연동)",
@@ -63,24 +63,24 @@ window.INVITATION = {
 
   /* ── 첫 화면 ──────────────────────────────────────────────── */
   cover: {
-    photo: "photos/cover.jpg",
+    photo: "photos/cover-20261117014019.jpg",
     lettering: "We're getting married",
     label: "Wedding Invitation",
-    focus: "37% 43%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
+    focus: "59% 41%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
   },
 
   /* ── 인사말 ───────────────────────────────────────────────── */
   greeting: {
     title: "소중한 분들을 초대합니다",
-    quote: `"마음을 같이 하여 같은 사랑을 가지고
-뜻을 합하며 한 마음을 품어"`,
+    quote: `"마음을 같이하여 같은 사랑을 가지고
+뜻을 합하며 한마음을 품어"`,
     quoteSource: "빌립보서 2장 2절",
     message: `자신보다 소중한 사람을 만나
-한 마음으로 사랑하며 
+한마음으로 사랑하며 
 같은 곳을 향하려 합니다.
 
-저희 두 사람의 첫 걸음에 
-함께하여 축복해주시면 
+저희 두 사람의 첫걸음에 
+함께하여 축복해 주시면 
 더없는 기쁨으로 간직하겠습니다.`,
   },
 
@@ -88,16 +88,30 @@ window.INVITATION = {
   gallery: {
     title: "우리의 순간들",
     photos: [
-      "photos/gallery/09.jpg",
-      "photos/gallery/08.jpg",
-      "photos/gallery/07.jpg",
-      "photos/gallery/06.jpg",
-      "photos/gallery/01.jpg",
-      "photos/gallery/02.jpg",
-      "photos/gallery/10.jpg",
-      "photos/gallery/03.jpg",
-      "photos/gallery/04.jpg",
-      "photos/gallery/05.jpg",
+      "photos/gallery/p20261117002539-10.jpg",
+      "photos/gallery/p20261117002539-11.jpg",
+      "photos/gallery/p20261117002539-3.jpg",
+      "photos/gallery/p20261117002539-2.jpg",
+      "photos/gallery/p20261117002539-5.jpg",
+      "photos/gallery/p20261117002539-12.jpg",
+      "photos/gallery/p20261117002539-7.jpg",
+      "photos/gallery/p20261117002539-14.jpg",
+      "photos/gallery/p20261117002539-6.jpg",
+      "photos/gallery/p20261117002539-1.jpg",
+      "photos/gallery/p20261117002539-15.jpg",
+      "photos/gallery/p20261117002539-13.jpg",
+      "photos/gallery/p20261117002539-18.jpg",
+      "photos/gallery/p20261117002539-19.jpg",
+      "photos/gallery/p20261117002539-27.jpg",
+      "photos/gallery/p20261117002539-16.jpg",
+      "photos/gallery/p20261117002539-9.jpg",
+      "photos/gallery/p20261117002539-29.jpg",
+      "photos/gallery/p20261117002539-21.jpg",
+      "photos/gallery/p20261117002539-22.jpg",
+      "photos/gallery/p20261117002539-23.jpg",
+      "photos/gallery/p20261117002539-24.jpg",
+      "photos/gallery/p20261117002539-25.jpg",
+      "photos/gallery/p20261117002539-26.jpg",
     ],
   },
 
