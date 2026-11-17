@@ -170,6 +170,7 @@ function normalize(d){
     accounts: { title: str(a.title), groomSide: accs(a.groomSide), brideSide: accs(a.brideSide) },
     share: { title: str(s.title), description: str(s.description) },
     bgm: str(d.bgm),
+    bgmDelay: Math.max(0, Math.min(30, parseFloat(d.bgmDelay) || 0)),
     closing: { lettering: str(e.lettering), message: str(e.message) }
   };
 }
@@ -295,6 +296,7 @@ function serializeContent(data){
   L.push('');
   L.push('  /* ── 배경음악 (관리자 화면에서 올립니다. 비워 두면 음악 버튼이 보이지 않습니다) ── */');
   L.push('  bgm: ' + q(d.bgm) + ',');
+  L.push('  bgmDelay: ' + d.bgmDelay + ',                 // 청첩장이 열린 뒤 몇 초 있다가 음악을 시작할지 (0 = 바로)');
   L.push('');
   L.push('  /* ── 맨 아래 인사 ─────────────────────────────────────────── */');
   L.push('  closing: {');
@@ -518,7 +520,7 @@ function bgmEditor(){
     }, 'b sm'));
     if(d.bgm) row.appendChild(btn('음악 빼기', function(){ d.bgm = ''; draw(); touched(); }, 'b sm danger'));
     box.appendChild(row);
-    box.appendChild(h('div', 'note', 'mp3 또는 m4a, 8MB 이하. 손님이 청첩장을 열고 화면을 처음 누르는 순간 음악이 시작되고(휴대폰은 누르기 전에는 소리를 낼 수 없습니다), 오른쪽 위 동그란 버튼으로 끄고 켤 수 있습니다.'));
+    box.appendChild(h('div', 'note', 'mp3 또는 m4a, 8MB 이하. 손님이 셔터를 눌러 청첩장이 열리면 음악이 시작되고, 오른쪽 위 동그란 버튼으로 끄고 켤 수 있습니다. 입장 화면을 꺼 둔 경우에는 휴대폰 제한 때문에 화면을 처음 누르는 순간 시작됩니다.'));
     box.appendChild(h('div', 'note warn', '청첩장은 누구나 열 수 있는 주소입니다. 직접 만든 곡이나 사용 허락을 받은 음원(무료 배포 음원 등)만 올려 주세요.'));
   }
   draw(); return box;
@@ -588,7 +590,7 @@ function render(){
   var rsvpNodes = [sw, fld('제목', 'rsvp.title'), fld('안내 문구', 'rsvp.message', { type: 'textarea', rows: 2 })];
   if(d.rsvp.sheetUrl){ var sa = h('a', 'b', '참석 명단 보기 (구글 시트)'); sa.href = d.rsvp.sheetUrl; sa.target = '_blank'; sa.rel = 'noopener'; rsvpNodes.push(sa); }
   rsvpNodes.push(h('div', 'note', d.rsvp.form.id ? '손님이 보낸 성함, 신랑측·신부측, 참석 여부, 인원이 구글 시트에 한 줄씩 쌓입니다. 시트의 "집계" 탭에서 인원 합계를 볼 수 있습니다.' : '아직 구글 폼이 연결되지 않았습니다.'));
-  app.appendChild(card('배경음악', d.bgm ? (S.pending[d.bgm] && !S.pending[d.bgm].saved ? '새 음악 (저장 전)' : '설정됨') : '없음', [bgmEditor()]));
+  app.appendChild(card('배경음악', d.bgm ? (S.pending[d.bgm] && !S.pending[d.bgm].saved ? '새 음악 (저장 전)' : '설정됨') : '없음', [bgmEditor(), fld('청첩장이 열린 뒤 음악 시작까지 (초)', 'bgmDelay', { mode: 'decimal', hint: '0 이면 열리는 순간 바로 시작합니다. 최대 30초' })]));
   app.appendChild(card('참석 여부', d.rsvp.show ? '보이는 중' : '숨김', rsvpNodes));
   app.appendChild(card('마음 전하실 곳', (d.accounts.groomSide.length + d.accounts.brideSide.length) + '개 계좌', [
     fld('제목', 'accounts.title'),
