@@ -72,7 +72,10 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){.down{animation:none}}
 
 /* entry: viewfinder gate, then backlit sunlight from the right */
-@media (max-width:479px){html.gated,html.gated body{overflow:hidden;overscroll-behavior:none}}
+/* until the shutter is pressed there is nothing below the first screen to scroll to */
+html.gated .inv>:not(.cover){display:none}
+html.gated,html.gated body{overscroll-behavior:none}
+@media (max-width:479px){html.gated,html.gated body{overflow:hidden}html.gated .cover{min-height:0}}
 .bgm{transition:opacity .6s ease}
 html.gated .bgm{opacity:0;pointer-events:none}
 .cover.sunup .topo,.cover.sunup .ov{transition:opacity 1.4s ease 1s}
