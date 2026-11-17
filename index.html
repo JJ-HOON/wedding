@@ -578,7 +578,8 @@ function startInvitation(preview){
   $('copyBtn').addEventListener('click', function(){ copyText(pageUrl, '청첩장 주소를 복사했습니다'); });
 
   /* ---------- entry: a viewfinder first; the shutter lets the sunlight in and opens the invitation ---------- */
-  var En = D.entry || {}, gated = En.show !== false, bgmAudio = null, root = document.documentElement;
+  var En = D.entry || {}, gated = En.show !== false, bgmUnlock = null, bgmStart = null, root = document.documentElement;
+  var bgmDelay = Math.max(0, Math.min(30, parseFloat(D.bgmDelay) || 0)) * 1000;
   if(gated){
     var cov = cimg.parentNode, gate = el('div', 'gate'), sunL = el('div', 'sunl'), going = false, actx = null;
     gate.innerHTML = '<div class="hud tl">AF-S</div><div class="hud tr">RAW<span class="bat"></span></div><i class="br b1"></i><i class="br b2"></i><i class="br b3"></i><i class="br b4"></i><div class="fbox"></div><div class="txt"><div class="gnm"></div><div class="gdt"></div></div><div class="expo"><span>1/125</span><span>F2.8</span><span>ISO 200</span><span class="xd"></span></div><div class="act"><button type="button" class="go" aria-label="셔터를 눌러 청첩장 열기"></button><div class="hint">셔터를 눌러 주세요</div></div><i class="blade t"></i><i class="blade b"></i>';
@@ -614,12 +615,12 @@ function startInvitation(preview){
       if(!snd()) return;
       try{ [0, 0.12].forEach(function(dt){ var t = actx.currentTime + 0.05 + dt, o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = 2350; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.12, t + 0.005); g.gain.setValueAtTime(0.12, t + 0.05); g.gain.linearRampToValueAtTime(0.0001, t + 0.06); o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.07); }); }catch(e){}
     };
-    var gateOpen = function(){ cov.classList.add('sunup'); if(bgmAudio) bgmAudio.muted = false; };
+    var gateOpen = function(){ cov.classList.add('sunup'); if(bgmStart) setTimeout(bgmStart, bgmDelay); };
     var gateUnlock = function(){ root.classList.remove('gated'); };
     var gateDone = function(){ gate.remove(); sunL.remove(); cov.classList.remove('gated', 'focus', 'snap', 'sunup'); if(actx && actx.close){ try{ actx.close(); }catch(e){} } };
     gate.querySelector('.go').addEventListener('click', function(){
       if(going) return; going = true;
-      if(bgmAudio) bgmAudio.muted = true;   /* the music is started by this tap, and is let through when the light comes in */
+      if(bgmUnlock) bgmUnlock();   /* this tap gives the music permission to start once the invitation is open */
       if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ sndShutter(); gateOpen(); setTimeout(gateUnlock, 500); setTimeout(gateDone, 1000); return; }
       cov.classList.add('focus'); sndFocus();
       setTimeout(function(){ cov.classList.add('snap'); sndShutter(); }, 700);
@@ -629,28 +630,43 @@ function startInvitation(preview){
     });
   }
 
-  /* ---------- bgm: starts on the guest's first touch, top-right button turns it on and off ---------- */
+  /* ---------- bgm: starts when the invitation opens (after the shutter), top-right button turns it off and on ---------- */
   if(D.bgm){
-    var bb = $('bgm'), audio = new Audio(), userOff = false, resume = false; bgmAudio = audio;
-    audio.loop = true; audio.preload = preview ? 'none' : 'auto'; audio.src = D.bgm; bb.hidden = false;
-    var bgmDraw = function(){ var on = !audio.paused; bb.classList.toggle('on', on); bb.setAttribute('aria-pressed', on ? 'true' : 'false'); bb.setAttribute('aria-label', on ? '배경음악 끄기' : '배경음악 켜기'); };
-    var bgmPlay = function(quiet){ var p; try{ p = audio.play(); }catch(e){} if(p && p.catch) p.catch(function(){ if(!quiet) toast('음악을 재생하지 못했습니다'); }); };
+    var bb = $('bgm'), audio = new Audio(), userOff = false, resume = false, priming = false, wanted = false, armed = false;
+    audio.loop = true; audio.preload = 'auto'; audio.src = D.bgm; bb.hidden = false;
+    var bgmDraw = function(){ var on = !audio.paused && !priming; bb.classList.toggle('on', on); bb.setAttribute('aria-pressed', on ? 'true' : 'false'); bb.setAttribute('aria-label', on ? '배경음악 끄기' : '배경음악 켜기'); };
     audio.addEventListener('play', bgmDraw); audio.addEventListener('pause', bgmDraw);
-    bb.addEventListener('click', function(){ if(audio.paused){ userOff = false; bgmPlay(false); } else { userOff = true; audio.pause(); } });
-    if(!preview){
-      var kickOn = ['click', 'touchend', 'keydown'];
-      var kickStop = function(){ kickOn.forEach(function(t){ document.removeEventListener(t, kick, true); }); };
-      var kick = function(e){
-        if(userOff || !audio.paused || bb.contains(e.target)){ kickStop(); return; }
-        if(root.classList.contains('gated') && !(e.target.closest && e.target.closest('.gate .go'))) return;   /* behind the viewfinder only the shutter starts it */
-        bgmPlay(true);
+    /* if the browser refuses to start it by itself, the guest's next touch anywhere starts it */
+    var kickOn = ['click', 'touchend', 'keydown'];
+    var disarm = function(){ if(!armed) return; armed = false; kickOn.forEach(function(t){ document.removeEventListener(t, kick, true); }); };
+    var arm = function(){ if(armed || userOff) return; armed = true; kickOn.forEach(function(t){ document.addEventListener(t, kick, true); }); };
+    var tryPlay = function(){ var p; try{ p = audio.play(); }catch(e){} if(p && p.then) p.then(disarm, arm); };
+    var kick = function(e){
+      if(userOff || !audio.paused){ disarm(); return; }
+      if(bb.contains(e.target) || root.classList.contains('gated')) return;
+      tryPlay();
+    };
+    bb.addEventListener('click', function(){
+      if(audio.paused){ userOff = false; var p; try{ p = audio.play(); }catch(e){} if(p && p.catch) p.catch(function(){ toast('음악을 재생하지 못했습니다'); }); }
+      else { userOff = true; disarm(); audio.pause(); }
+    });
+    /* called inside the shutter tap: a silent play-and-pause, so the phone lets the music start a moment later */
+    bgmUnlock = function(){
+      priming = true; audio.muted = true;
+      var settle = function(){
+        priming = false;
+        if(wanted){ audio.muted = false; bgmDraw(); setTimeout(function(){ if(audio.paused && !userOff) tryPlay(); }, 150); }
+        else { audio.pause(); try{ audio.currentTime = 0; }catch(e){} audio.muted = false; }
       };
-      kickOn.forEach(function(t){ document.addEventListener(t, kick, true); });
-      audio.addEventListener('play', kickStop);
-      if(!gated) bgmPlay(true);
+      var p; try{ p = audio.play(); }catch(e){}
+      if(p && p.then) p.then(settle, function(){ priming = false; audio.muted = false; if(wanted) tryPlay(); }); else settle();
+    };
+    bgmStart = function(){ wanted = true; if(priming || userOff || !audio.paused) return; try{ audio.currentTime = 0; }catch(e){} tryPlay(); };
+    if(!preview){
+      if(!gated) bgmStart();
       document.addEventListener('visibilitychange', function(){
         if(document.hidden){ resume = !audio.paused; if(resume) audio.pause(); }
-        else if(resume && !userOff){ resume = false; bgmPlay(true); }
+        else if(resume && !userOff){ resume = false; tryPlay(); }
       });
     }
   }
