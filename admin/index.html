@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://api.github.com; frame-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' https://api.github.com; frame-src 'self'; base-uri 'none'; form-action 'none'">
 <title>청첩장 관리</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -79,6 +79,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 @media (max-width:420px){.coverbox{grid-template-columns:1fr}}
 .phone{width:132px;aspect-ratio:9/17.5;border-radius:14px;overflow:hidden;background:var(--line);border:1px solid var(--line)}
 .phone img{width:100%;height:100%;object-fit:cover;display:block}
+.bgmbox{display:grid;gap:10px}
+.bgmbox audio{width:100%;height:40px}
 .ogbox img{width:100%;max-width:300px;aspect-ratio:1200/630;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;background:var(--line)}
 
 .ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -150,7 +152,7 @@ function parseContent(text){
 }
 function normalize(d){
   d = d || {};
-  var v = d.venue || {}, w = d.wedding || {}, c = d.cover || {}, g = d.greeting || {}, ga = d.gallery || {}, r = d.rsvp || {}, f = r.form || {}, a = d.accounts || {}, s = d.share || {}, e = d.closing || {};
+  var v = d.venue || {}, w = d.wedding || {}, c = d.cover || {}, g = d.greeting || {}, ga = d.gallery || {}, r = d.rsvp || {}, f = r.form || {}, a = d.accounts || {}, s = d.share || {}, e = d.closing || {}, en = d.entry || {};
   function person(p){ p = p || {}; return { name: str(p.name), givenName: str(p.givenName), father: str(p.father), mother: str(p.mother), relation: str(p.relation), intro: str(p.intro), photo: str(p.photo) }; }
   function accs(list){ return (Array.isArray(list) ? list : []).map(function(x){ x = x || {}; return { who: str(x.who), bank: str(x.bank), number: str(x.number) }; }); }
   var st = Array.isArray(v.stations) ? v.stations : [];
@@ -161,6 +163,7 @@ function normalize(d){
     venue: { name: str(v.name), city: str(v.city), hall: str(v.hall), address: str(v.address), tel: str(v.tel), mapSearch: str(v.mapSearch), stations: [str(st[0]), str(st[1])] },
     transport: (Array.isArray(d.transport) ? d.transport : []).map(function(t){ t = t || {}; return { label: str(t.label), text: str(t.text), note: str(t.note) }; }),
     cover: { photo: str(c.photo), lettering: str(c.lettering), label: str(c.label), focus: str(c.focus) || '50% 50%' },
+    entry: { show: en.show !== false, message: str(en.message) || '결혼식에 초대합니다' },
     greeting: { title: str(g.title), quote: str(g.quote), quoteSource: str(g.quoteSource), message: str(g.message) },
     gallery: { title: str(ga.title), photos: (Array.isArray(ga.photos) ? ga.photos : []).map(str).filter(Boolean) },
     rsvp: { show: r.show !== false, title: str(r.title), message: str(r.message), form: { id: str(f.id), name: str(f.name), side: str(f.side), attend: str(f.attend), count: str(f.count) }, sheetUrl: str(r.sheetUrl) },
@@ -238,6 +241,12 @@ function serializeContent(data){
   L.push('    focus: ' + q(d.cover.focus) + ',             // 사진이 잘릴 때의 중심점 "가로% 세로%"');
   L.push('  },');
   L.push('');
+  L.push('  /* ── 입장 화면 (청첩장을 열면 먼저 보이는 카메라 화면. 셔터를 누르면 열립니다) ── */');
+  L.push('  entry: {');
+  L.push('    show: ' + (d.entry.show ? 'true' : 'false') + ',');
+  L.push('    message: ' + q(d.entry.message) + ',          // 이름 아래 작은 문구');
+  L.push('  },');
+  L.push('');
   L.push('  /* ── 인사말 ───────────────────────────────────────────────── */');
   L.push('  greeting: {');
   L.push('    title: ' + q(d.greeting.title) + ',');
@@ -284,7 +293,7 @@ function serializeContent(data){
   L.push('    description: ' + q(d.share.description) + ',');
   L.push('  },');
   L.push('');
-  L.push('  /* ── 배경음악 (mp3 파일 이름. 비워 두면 음악 버튼이 보이지 않습니다) ── */');
+  L.push('  /* ── 배경음악 (관리자 화면에서 올립니다. 비워 두면 음악 버튼이 보이지 않습니다) ── */');
   L.push('  bgm: ' + q(d.bgm) + ',');
   L.push('');
   L.push('  /* ── 맨 아래 인사 ─────────────────────────────────────────── */');
@@ -308,7 +317,7 @@ function updateIndexHtml(html, data){
 }
 function usedPhotos(data){
   var d = normalize(data), set = {};
-  [d.cover.photo, d.groom.photo, d.bride.photo, 'photos/og.jpg'].concat(d.gallery.photos).forEach(function(p){ if(p) set[p] = true; });
+  [d.cover.photo, d.groom.photo, d.bride.photo, 'photos/og.jpg', d.bgm].concat(d.gallery.photos).forEach(function(p){ if(p) set[p] = true; });
   return set;
 }
 function parseFocus(f){ var m = /(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%/.exec(str(f)); return m ? { x: Math.max(0, Math.min(100, +m[1])), y: Math.max(0, Math.min(100, +m[2])) } : { x: 50, y: 50 }; }
@@ -372,9 +381,9 @@ function makeOg(){
     return canvasBlob(c, 0.85);
   }).then(function(b){ addPending('photos/og.jpg', b); return b; });
 }
-function blobBase64(blob){ return new Promise(function(res, rej){ var fr = new FileReader(); fr.onload = function(){ res(String(fr.result).split(',')[1]); }; fr.onerror = function(){ rej(new Error('사진을 읽지 못했습니다')); }; fr.readAsDataURL(blob); }); }
+function blobBase64(blob){ return new Promise(function(res, rej){ var fr = new FileReader(); fr.onload = function(){ res(String(fr.result).split(',')[1]); }; fr.onerror = function(){ rej(new Error('파일을 읽지 못했습니다')); }; fr.readAsDataURL(blob); }); }
 var pickCb = null;
-function pick(multiple, cb){ var p = $('picker'); p.multiple = !!multiple; p.value = ''; pickCb = cb; p.click(); }
+function pick(multiple, cb, accept){ var p = $('picker'); p.accept = accept || 'image/*'; p.multiple = !!multiple; p.value = ''; pickCb = cb; p.click(); }
 $('picker').addEventListener('change', function(){ var files = [].slice.call(this.files || []); if(files.length && pickCb) pickCb(files); });
 
 /* ---------- form pieces ---------- */
@@ -422,8 +431,8 @@ function personFields(key, label, rels){
   return [
     h('div', 'sub', label),
     two(fld('성함', key + '.name'), fld('이름만', key + '.givenName', { hint: '남은 날짜 문구에 쓰입니다' })),
-    two(fld('아버지', key + '.father'), fld('어머니', key + '.mother')),
-    fld('관계', key + '.relation', { hint: rels }),
+    two(fld('아버지 성함', key + '.father'), fld('어머니 성함', key + '.mother')),
+    fld('관계', key + '.relation', { hint: rels + ' ― 청첩장에는 "홍길동 · 김철순의 장남"처럼 한 줄로 보입니다' }),
     fld('소개 문구', key + '.intro', { type: 'textarea', rows: 2 }),
     personPhoto(key, label)
   ];
@@ -489,6 +498,32 @@ function galleryEditor(){
   wrap.appendChild(grid); wrap.appendChild(add); draw(); return wrap;
 }
 
+function bgmEditor(){
+  var box = h('div', 'bgmbox'), d = S.data, MAX = 8 * 1024 * 1024;
+  function draw(){
+    box.textContent = '';
+    if(d.bgm){
+      var fresh = S.pending[d.bgm] && !S.pending[d.bgm].saved;
+      box.appendChild(h('div', 'note', fresh ? '새 음악이 준비되었습니다. 아래에서 들어 보고, 저장을 눌러야 청첩장에 올라갑니다.' : '지금 청첩장에 들어 있는 음악입니다.'));
+      var au = h('audio'); au.controls = true; au.preload = 'none'; au.src = photoUrl(d.bgm); box.appendChild(au);
+    } else box.appendChild(h('div', 'note', '아직 음악이 없습니다. 음악이 없으면 청첩장에 음악 버튼도 보이지 않습니다.'));
+    var row = h('div', 'rowbtns');
+    row.appendChild(btn(d.bgm ? '다른 음악으로 바꾸기' : '음악 파일 올리기', function(){
+      pick(false, function(files){
+        var f = files[0], m = /\.(mp3|m4a)$/i.exec(f.name || ''), ext = m ? m[1].toLowerCase() : (f.type === 'audio/mpeg' ? 'mp3' : (/^audio\/(mp4|x-m4a|aac)$/.test(f.type) ? 'm4a' : ''));
+        if(!ext){ toast('mp3 또는 m4a 파일만 올릴 수 있습니다'); return; }
+        if(f.size > MAX){ toast('파일이 너무 큽니다 (' + (f.size / 1048576).toFixed(1) + 'MB). 8MB 이하로 줄여 주세요'); return; }
+        var p = 'music/bgm-' + stamp() + '.' + ext; addPending(p, f); d.bgm = p; draw(); touched();
+      }, '.mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a');
+    }, 'b sm'));
+    if(d.bgm) row.appendChild(btn('음악 빼기', function(){ d.bgm = ''; draw(); touched(); }, 'b sm danger'));
+    box.appendChild(row);
+    box.appendChild(h('div', 'note', 'mp3 또는 m4a, 8MB 이하. 손님이 청첩장을 열고 화면을 처음 누르는 순간 음악이 시작되고(휴대폰은 누르기 전에는 소리를 낼 수 없습니다), 오른쪽 위 동그란 버튼으로 끄고 켤 수 있습니다.'));
+    box.appendChild(h('div', 'note warn', '청첩장은 누구나 열 수 있는 주소입니다. 직접 만든 곡이나 사용 허락을 받은 음원(무료 배포 음원 등)만 올려 주세요.'));
+  }
+  draw(); return box;
+}
+
 /* ---------- key panel ---------- */
 function keyCard(){
   var nodes = [];
@@ -536,6 +571,12 @@ function render(){
     coverEditor(),
     two(fld('사진 위 필기체 문구', 'cover.lettering', { hint: '영문 권장' }), fld('작은 영문 표시', 'cover.label'))
   ]));
+  var esw = h('label', 'sw'), ecb = h('input'); ecb.type = 'checkbox'; ecb.id = 'f-entry-show'; ecb.checked = d.entry.show; ecb.addEventListener('change', function(){ d.entry.show = ecb.checked; touched(); }); esw.appendChild(ecb); esw.appendChild(document.createTextNode('청첩장을 열 때 카메라 입장 화면 보이기'));
+  app.appendChild(card('입장 화면', d.entry.show ? '보이는 중' : '숨김', [
+    esw,
+    fld('이름 아래 작은 문구', 'entry.message', { hint: '비워 두면 "결혼식에 초대합니다"로 보입니다' }),
+    h('div', 'note', '뷰파인더 화면에서 손님이 셔터를 누르면 찰칵 소리와 함께 오른쪽에서 햇살이 들어오며 청첩장이 열립니다. 배경음악이 있으면 이때 함께 시작됩니다. 끄면 예전처럼 바로 첫 화면이 보입니다.')
+  ]));
   app.appendChild(card('인사말', d.greeting.title, [
     fld('제목', 'greeting.title'),
     fld('인용구', 'greeting.quote', { type: 'textarea', rows: 2, hint: '비워 두면 표시하지 않습니다' }),
@@ -547,6 +588,7 @@ function render(){
   var rsvpNodes = [sw, fld('제목', 'rsvp.title'), fld('안내 문구', 'rsvp.message', { type: 'textarea', rows: 2 })];
   if(d.rsvp.sheetUrl){ var sa = h('a', 'b', '참석 명단 보기 (구글 시트)'); sa.href = d.rsvp.sheetUrl; sa.target = '_blank'; sa.rel = 'noopener'; rsvpNodes.push(sa); }
   rsvpNodes.push(h('div', 'note', d.rsvp.form.id ? '손님이 보낸 성함, 신랑측·신부측, 참석 여부, 인원이 구글 시트에 한 줄씩 쌓입니다. 시트의 "집계" 탭에서 인원 합계를 볼 수 있습니다.' : '아직 구글 폼이 연결되지 않았습니다.'));
+  app.appendChild(card('배경음악', d.bgm ? (S.pending[d.bgm] && !S.pending[d.bgm].saved ? '새 음악 (저장 전)' : '설정됨') : '없음', [bgmEditor()]));
   app.appendChild(card('참석 여부', d.rsvp.show ? '보이는 중' : '숨김', rsvpNodes));
   app.appendChild(card('마음 전하실 곳', (d.accounts.groomSide.length + d.accounts.brideSide.length) + '개 계좌', [
     fld('제목', 'accounts.title'),
@@ -580,7 +622,7 @@ function refreshBar(){
 /* ---------- preview ---------- */
 function previewContent(){
   var d = normalize(S.data), swap = function(p){ return S.pending[p] ? S.pending[p].url : p; };
-  d.cover.photo = swap(d.cover.photo); d.groom.photo = swap(d.groom.photo); d.bride.photo = swap(d.bride.photo); d.gallery.photos = d.gallery.photos.map(swap);
+  d.cover.photo = swap(d.cover.photo); d.groom.photo = swap(d.groom.photo); d.bride.photo = swap(d.bride.photo); d.gallery.photos = d.gallery.photos.map(swap); d.bgm = swap(d.bgm);
   return d;
 }
 var pvFrame = null;
@@ -604,9 +646,10 @@ function save(){
   if(S.saving || !S.data) return;
   if(S.readOnly){ toast('저장하려면 먼저 열쇠를 넣어 주세요'); var k = document.querySelector('.card'); if(k){ k.open = true; k.scrollIntoView({ block: 'start' }); } return; }
   var data = normalize(S.data), text = serializeContent(data), used = usedPhotos(data), uploads = unsavedPhotos();
+  var nMusic = uploads.filter(function(p){ return /^music\//.test(p); }).length, nPhoto = uploads.length - nMusic;
   try{ if(!sameContent(parseContent(text), data)) throw new Error('x'); }catch(e){ alert('내용을 파일로 바꾸는 검사에서 문제가 생겨 저장을 멈췄습니다. 아무것도 바뀌지 않았습니다.'); return; }
   if(!data.cover.photo){ alert('대표 사진이 비어 있어 저장을 멈췄습니다.'); return; }
-  if(!confirm('청첩장에 반영할까요?' + (uploads.length ? '\n새 사진 ' + uploads.length + '장을 함께 올립니다.' : '') + '\n저장 후 1~2분 뒤 실제 주소에 나타납니다.')) return;
+  if(!confirm('청첩장에 반영할까요?' + (nPhoto ? '\n새 사진 ' + nPhoto + '장을 함께 올립니다.' : '') + (nMusic ? '\n새 배경음악을 함께 올립니다.' : '') + '\n저장 후 1~2분 뒤 실제 주소에 나타납니다.')) return;
   S.saving = true; S.liveNote = ''; refreshBar(); $('busyLog').textContent = ''; $('busyTitle').textContent = '저장하는 중'; $('busy').hidden = false;
   var headSha, treeSha, entries = [], removed = 0;
   logStep('현재 상태 확인');
@@ -617,8 +660,8 @@ function save(){
   }).then(function(commit){
     treeSha = commit.tree.sha; return api('/git/trees/' + treeSha + '?recursive=1');
   }).then(function(tree){
-    (tree.tree || []).forEach(function(t){ if(t.type === 'blob' && /^photos\//.test(t.path) && !used[t.path]){ entries.push({ path: t.path, mode: '100644', type: 'blob', sha: null }); removed++; } });
-    if(uploads.length) logStep('사진 ' + uploads.length + '장 올리기');
+    (tree.tree || []).forEach(function(t){ if(t.type === 'blob' && /^(photos|music)\//.test(t.path) && !used[t.path]){ entries.push({ path: t.path, mode: '100644', type: 'blob', sha: null }); removed++; } });
+    if(nPhoto) logStep('사진 ' + nPhoto + '장 올리기'); if(nMusic) logStep('배경음악 올리기');
     return uploads.reduce(function(chain, p){ return chain.then(function(){ return blobBase64(S.pending[p].blob).then(function(b64){ return api('/git/blobs', { method: 'POST', body: { content: b64, encoding: 'base64' } }); }).then(function(blob){ entries.push({ path: p, mode: '100644', type: 'blob', sha: blob.sha }); }); }); }, Promise.resolve());
   }).then(function(){
     return api('/contents/index.html?ref=' + headSha, { raw: true });
@@ -629,7 +672,7 @@ function save(){
     logStep('변경 내용 기록');
     return api('/git/trees', { method: 'POST', body: { base_tree: treeSha, tree: entries } });
   }).then(function(tree){
-    return api('/git/commits', { method: 'POST', body: { message: '관리자 화면에서 수정' + (uploads.length ? ' (사진 ' + uploads.length + '장 추가)' : '') + (removed ? ' (사진 ' + removed + '장 정리)' : ''), tree: tree.sha, parents: [headSha], author: CFG.committer, committer: CFG.committer } });
+    return api('/git/commits', { method: 'POST', body: { message: '관리자 화면에서 수정' + (nPhoto ? ' (사진 ' + nPhoto + '장 추가)' : '') + (nMusic ? ' (배경음악 변경)' : '') + (removed ? ' (파일 ' + removed + '개 정리)' : ''), tree: tree.sha, parents: [headSha], author: CFG.committer, committer: CFG.committer } });
   }).then(function(commit){
     return api('/git/refs/heads/' + CFG.branch, { method: 'PATCH', body: { sha: commit.sha } }).then(function(){ return commit.sha; });
   }).then(function(sha){
