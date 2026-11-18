@@ -81,7 +81,7 @@ window.INVITATION = {
     quote: `"마음을 같이하여 같은 사랑을 가지고
 뜻을 합하며 한마음을 품어"`,
     quoteSource: "빌립보서 2장 2절",
-    message: `나를 나보다 더 사랑하는 사람을 만나
+    message: `평생 내 편이 되어  사람을 만나
 한마음으로 사랑하며 
 같은 곳을 향하려 합니다.
 
@@ -94,25 +94,27 @@ window.INVITATION = {
   gallery: {
     title: "우리의 순간들",
     photos: [
-      "photos/gallery/p20261117002539-10.jpg",
       "photos/gallery/p20261117002539-11.jpg",
-      "photos/gallery/p20261117002539-3.jpg",
+      "photos/gallery/p20261117002539-10.jpg",
+      "photos/gallery/p20261117002539-12.jpg",
       "photos/gallery/p20261117002539-2.jpg",
       "photos/gallery/p20261117002539-5.jpg",
-      "photos/gallery/p20261117002539-12.jpg",
-      "photos/gallery/p20261117002539-7.jpg",
       "photos/gallery/p20261117002539-14.jpg",
+      "photos/gallery/p20261117002539-7.jpg",
       "photos/gallery/p20261117002539-6.jpg",
       "photos/gallery/p20261117002539-1.jpg",
       "photos/gallery/p20261117002539-15.jpg",
       "photos/gallery/p20261117002539-13.jpg",
+      "photos/gallery/p20261117002539-3.jpg",
       "photos/gallery/p20261117002539-18.jpg",
       "photos/gallery/p20261117002539-19.jpg",
       "photos/gallery/p20261117002539-27.jpg",
       "photos/gallery/p20261117002539-16.jpg",
       "photos/gallery/p20261117002539-9.jpg",
       "photos/gallery/p20261117002539-29.jpg",
+      "photos/gallery/p20261118232833-1.jpg",
       "photos/gallery/p20261117002539-21.jpg",
+      "photos/gallery/p20261118233011-1.jpg",
       "photos/gallery/p20261117002539-22.jpg",
       "photos/gallery/p20261117002539-24.jpg",
       "photos/gallery/p20261117002539-26.jpg",
@@ -148,7 +150,7 @@ window.INVITATION = {
       { who: "어머니 이수연", bank: "", number: "" },
     ],
     brideSide: [
-      { who: "신부 전희린", bank: "카카오뱅크", number: "3333-10-20-56609" },
+      { who: "신부 전희린", bank: "카카오뱅크", number: "3333-26-9837452" },
       { who: "아버지 전동휘", bank: "국민은행", number: "637802-04-175885" },
       { who: "어머니 장성희", bank: "농협은행", number: "301-0330-8708-61" },
     ],
