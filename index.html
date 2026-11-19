@@ -396,6 +396,10 @@ function startInvitation(preview){
   if(C.focus) cimg.style.objectPosition = C.focus;
   $('coverLettering').textContent = C.lettering || '';
   $('coverLabel').textContent = C.label || '';
+  /* the lettering block can be moved from the admin page: textY = % of the screen from the top, textX = % sideways (0 = centre) */
+  var topo = $('coverLettering').parentNode, tY = parseFloat(C.textY), tX = parseFloat(C.textX);
+  if(isFinite(tY)) topo.style.top = Math.max(0, Math.min(85, tY)) + '%';
+  if(isFinite(tX) && tX) topo.style.transform = 'translateX(' + Math.max(-40, Math.min(40, tX)) + '%)';
   var nm = $('coverNames'); nm.appendChild(document.createTextNode(G.name || '')); nm.appendChild(el('i', '', '♡')); nm.appendChild(document.createTextNode(B.name || ''));
   $('coverDate').textContent = enDate;
   $('coverVenue').textContent = [V.name, V.city].filter(Boolean).join(', ');
