@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' https://api.github.com; frame-src 'self'; base-uri 'none'; form-action 'none'">
 <title>청첩장 관리</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Pinyon+Script&display=swap">
 <style>
 :root{
   --bg:#F2F0EA; --card:#FFFFFF; --ink:#2F2823; --muted:#7A7068; --line:#E0D9CD; --soft:#F7F5F0;
@@ -79,6 +79,10 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 @media (max-width:420px){.coverbox{grid-template-columns:1fr}}
 .phone{width:132px;aspect-ratio:9/17.5;border-radius:14px;overflow:hidden;background:var(--line);border:1px solid var(--line)}
 .phone img{width:100%;height:100%;object-fit:cover;display:block}
+.phone{position:relative}
+.ptxt{position:absolute;left:0;right:0;padding:0 4px;text-align:center;color:#3D332C;pointer-events:none}
+.pscr{font-family:"Pinyon Script",cursive;font-size:13px;line-height:1;white-space:nowrap;text-shadow:0 0 5px rgba(255,255,255,.7)}
+.plab{font-size:3.6px;letter-spacing:.34em;text-transform:uppercase;margin-top:3px;opacity:.78;white-space:nowrap}
 .bgmbox{display:grid;gap:10px}
 .bgmbox audio{width:100%;height:40px}
 .ogbox img{width:100%;max-width:300px;aspect-ratio:1200/630;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;background:var(--line)}
@@ -145,6 +149,7 @@ var CFG = {
 
 /* ===== PURE-START : no page access below, so these can be tested on their own ===== */
 function str(v){ return v == null ? '' : String(v); }
+function num(v, dflt, min, max){ var n = parseFloat(v); if(!isFinite(n)) n = dflt; return Math.max(min, Math.min(max, Math.round(n))); }
 function parseContent(text){
   var w = {}; (new Function('window', text))(w);
   if(!w.INVITATION || typeof w.INVITATION !== 'object') throw new Error('content.js 에서 내용을 찾지 못했습니다');
@@ -162,7 +167,7 @@ function normalize(d){
     wedding: { date: str(w.date), time: str(w.time) },
     venue: { name: str(v.name), city: str(v.city), hall: str(v.hall), address: str(v.address), tel: str(v.tel), mapSearch: str(v.mapSearch), stations: [str(st[0]), str(st[1])] },
     transport: (Array.isArray(d.transport) ? d.transport : []).map(function(t){ t = t || {}; return { label: str(t.label), text: str(t.text), note: str(t.note) }; }),
-    cover: { photo: str(c.photo), lettering: str(c.lettering), label: str(c.label), focus: str(c.focus) || '50% 50%' },
+    cover: { photo: str(c.photo), lettering: str(c.lettering), label: str(c.label), focus: str(c.focus) || '50% 50%', textY: num(c.textY, 8, 0, 85), textX: num(c.textX, 0, -40, 40) },
     entry: { show: en.show !== false, message: str(en.message) || '결혼식에 초대합니다' },
     greeting: { title: str(g.title), quote: str(g.quote), quoteSource: str(g.quoteSource), message: str(g.message) },
     gallery: { title: str(ga.title), photos: (Array.isArray(ga.photos) ? ga.photos : []).map(str).filter(Boolean) },
@@ -240,6 +245,8 @@ function serializeContent(data){
   L.push('    lettering: ' + q(d.cover.lettering) + ',');
   L.push('    label: ' + q(d.cover.label) + ',');
   L.push('    focus: ' + q(d.cover.focus) + ',             // 사진이 잘릴 때의 중심점 "가로% 세로%"');
+  L.push('    textY: ' + d.cover.textY + ',                    // 사진 위 글씨의 위아래 위치 (화면 위에서부터 %)');
+  L.push('    textX: ' + d.cover.textX + ',                    // 사진 위 글씨의 좌우 위치 (0 = 가운데, 빼기 = 왼쪽, 더하기 = 오른쪽)');
   L.push('  },');
   L.push('');
   L.push('  /* ── 입장 화면 (청첩장을 열면 먼저 보이는 카메라 화면. 셔터를 누르면 열립니다) ── */');
@@ -439,17 +446,29 @@ function personFields(key, label, rels){
     personPhoto(key, label)
   ];
 }
+var coverDraw = null;
 function coverEditor(){
   var box = h('div', 'coverbox'), ph = h('div', 'phone'), im = h('img'); im.alt = '첫 화면에 보이는 모습'; ph.appendChild(im);
+  var ov = h('div', 'ptxt'), ovA = h('div', 'pscr'), ovB = h('div', 'plab'); ov.appendChild(ovA); ov.appendChild(ovB); ph.appendChild(ov);
   var side = h('div'); side.style.display = 'grid'; side.style.gap = '10px';
-  var f = parseFocus(S.data.cover.focus);
-  function draw(){ im.src = photoUrl(S.data.cover.photo); im.style.objectPosition = S.data.cover.focus; }
-  function rng(label, val, on){ var w = h('label', 'fld'); w.appendChild(h('span', 'lb', label)); var r = h('input'); r.type = 'range'; r.min = 0; r.max = 100; r.step = 1; r.value = val; r.addEventListener('input', function(){ on(+r.value); }); w.appendChild(r); return w; }
+  var f = parseFocus(S.data.cover.focus), c = S.data.cover;
+  function draw(){
+    var u = photoUrl(c.photo); if(im.getAttribute('src') !== u) im.src = u; im.style.objectPosition = c.focus;
+    ovA.textContent = c.lettering; ovB.textContent = c.label; ov.style.top = c.textY + '%'; ov.style.transform = 'translateX(' + c.textX + '%)';
+  }
+  function rng(label, val, on, min, max){ var w = h('label', 'fld'); w.appendChild(h('span', 'lb', label)); var r = h('input'); r.type = 'range'; r.min = min == null ? 0 : min; r.max = max == null ? 100 : max; r.step = 1; r.value = val; r.addEventListener('input', function(){ on(+r.value); }); w.appendChild(r); return w; }
   side.appendChild(h('div', 'note', '휴대폰에서는 사진의 좌우가 잘립니다. 왼쪽 그림을 보면서 두 분이 다 보이도록 맞춰 주세요.'));
-  side.appendChild(rng('좌우 위치', f.x, function(v){ f.x = v; S.data.cover.focus = f.x + '% ' + f.y + '%'; draw(); touched(); }));
-  side.appendChild(rng('위아래 위치', f.y, function(v){ f.y = v; S.data.cover.focus = f.x + '% ' + f.y + '%'; draw(); touched(); }));
-  side.appendChild(btn('대표 사진 바꾸기', function(){ pick(false, function(files){ busyPick('사진을 줄이는 중…', function(){ return resizeFile(files[0], { max: 1800, quality: 0.84 }).then(function(blob){ var p = 'photos/cover-' + stamp() + '.jpg'; addPending(p, blob); S.data.cover.photo = p; draw(); return makeOg(); }).then(function(){ drawOg(); touched(); }); }); }); }, 'b sm'));
-  box.appendChild(ph); box.appendChild(side); draw(); return box;
+  side.appendChild(rng('좌우 위치', f.x, function(v){ f.x = v; c.focus = f.x + '% ' + f.y + '%'; draw(); touched(); }));
+  side.appendChild(rng('위아래 위치', f.y, function(v){ f.y = v; c.focus = f.x + '% ' + f.y + '%'; draw(); touched(); }));
+  side.appendChild(btn('대표 사진 바꾸기', function(){ pick(false, function(files){ busyPick('사진을 줄이는 중…', function(){ return resizeFile(files[0], { max: 1800, quality: 0.84 }).then(function(blob){ var p = 'photos/cover-' + stamp() + '.jpg'; addPending(p, blob); c.photo = p; draw(); return makeOg(); }).then(function(){ drawOg(); touched(); }); }); }); }, 'b sm'));
+  side.appendChild(h('div', 'sub', '사진 위 글씨 위치'));
+  side.appendChild(h('div', 'note', '필기체 문구와 작은 영문 표시가 한 덩어리로 함께 움직입니다. 얼굴을 가리지 않는 자리로 옮겨 주세요.'));
+  var ry = rng('글씨 위아래 위치', c.textY, function(v){ c.textY = v; draw(); touched(); }, 0, 85);
+  var rx = rng('글씨 좌우 위치', c.textX, function(v){ c.textX = v; draw(); touched(); }, -40, 40);
+  ry.querySelector('input').id = 'f-cover-textY'; rx.querySelector('input').id = 'f-cover-textX';
+  side.appendChild(ry); side.appendChild(rx);
+  side.appendChild(btn('글씨 위치 처음으로', function(){ c.textY = 8; c.textX = 0; ry.querySelector('input').value = 8; rx.querySelector('input').value = 0; draw(); touched(); }, 'b sm'));
+  box.appendChild(ph); box.appendChild(side); coverDraw = draw; draw(); return box;
 }
 var ogImg = null;
 function drawOg(){ if(ogImg) ogImg.src = S.pending['photos/og.jpg'] ? S.pending['photos/og.jpg'].url : '../photos/og.jpg'; }
@@ -571,7 +590,7 @@ function render(){
   ]));
   app.appendChild(card('첫 화면', d.cover.lettering, [
     coverEditor(),
-    two(fld('사진 위 필기체 문구', 'cover.lettering', { hint: '영문 권장' }), fld('작은 영문 표시', 'cover.label'))
+    two(fld('사진 위 필기체 문구', 'cover.lettering', { hint: '영문 권장', on: function(){ if(coverDraw) coverDraw(); } }), fld('작은 영문 표시', 'cover.label', { on: function(){ if(coverDraw) coverDraw(); } }))
   ]));
   var esw = h('label', 'sw'), ecb = h('input'); ecb.type = 'checkbox'; ecb.id = 'f-entry-show'; ecb.checked = d.entry.show; ecb.addEventListener('change', function(){ d.entry.show = ecb.checked; touched(); }); esw.appendChild(ecb); esw.appendChild(document.createTextNode('청첩장을 열 때 카메라 입장 화면 보이기'));
   app.appendChild(card('입장 화면', d.entry.show ? '보이는 중' : '숨김', [
