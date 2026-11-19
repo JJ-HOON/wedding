@@ -396,10 +396,20 @@ function startInvitation(preview){
   if(C.focus) cimg.style.objectPosition = C.focus;
   $('coverLettering').textContent = C.lettering || '';
   $('coverLabel').textContent = C.label || '';
-  /* the lettering block can be moved from the admin page: textY = % of the screen from the top, textX = % sideways (0 = centre) */
-  var topo = $('coverLettering').parentNode, tY = parseFloat(C.textY), tX = parseFloat(C.textX);
-  if(isFinite(tY)) topo.style.top = Math.max(0, Math.min(85, tY)) + '%';
-  if(isFinite(tX) && tX) topo.style.transform = 'translateX(' + Math.max(-40, Math.min(40, tX)) + '%)';
+  /* the two lines on the photo are placed and sized from the admin page, each on its own:
+     Y = % of the screen from the top, X = % sideways (0 = centre), Size = % of the normal size */
+  var topo = $('coverLettering').parentNode, tY = parseFloat(C.textY), tX = parseFloat(C.textX) || 0, lY = parseFloat(C.labelY), lX = parseFloat(C.labelX);
+  var lim = function(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); };
+  var placeLine = function(e, y, x){ var st = e.style; st.position = 'absolute'; st.left = '0'; st.right = '0'; st.margin = '0'; st.padding = '0 16px'; st.top = lim(y, 0, 92) + '%'; st.transform = x ? 'translateX(' + lim(x, -40, 40) + '%)' : ''; };
+  if(isFinite(tY)){
+    if(!isFinite(lY)) lY = tY + 6;
+    if(!isFinite(lX)) lX = tX;
+    topo.style.top = '0'; topo.style.bottom = '0'; topo.style.padding = '0';
+    placeLine($('coverLettering'), tY, tX); placeLine($('coverLabel'), lY, lX);
+  }
+  var tS = parseFloat(C.textSize), lS = parseFloat(C.labelSize);
+  if(isFinite(tS) && tS !== 100) $('coverLettering').style.fontSize = 'calc(clamp(34px, 10vw, 42px) * ' + lim(tS, 50, 200) / 100 + ')';
+  if(isFinite(lS) && lS !== 100) $('coverLabel').style.fontSize = 'calc(10.5px * ' + lim(lS, 50, 300) / 100 + ')';
   var nm = $('coverNames'); nm.appendChild(document.createTextNode(G.name || '')); nm.appendChild(el('i', '', '♡')); nm.appendChild(document.createTextNode(B.name || ''));
   $('coverDate').textContent = enDate;
   $('coverVenue').textContent = [V.name, V.city].filter(Boolean).join(', ');
