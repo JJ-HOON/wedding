@@ -61,7 +61,7 @@ window.INVITATION = {
 
   /* ── 첫 화면 ──────────────────────────────────────────────── */
   cover: {
-    photo: "photos/cover-20261120221035.jpg",
+    photo: "photos/cover-20261120225437.jpg",
     lettering: "We're getting married",
     label: "Wedding Invitation",
     focus: "52% 85%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
