@@ -65,14 +65,14 @@ window.INVITATION = {
 
   /* ── 첫 화면 ──────────────────────────────────────────────── */
   cover: {
-    photo: "photos/cover-20261117212515.jpg",
+    photo: "photos/cover-20261120215623.jpg",
     lettering: "We're getting married",
     label: "Wedding Invitation",
-    focus: "55% 85%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
-    textY: 5,                    // 필기체 문구: 위아래 위치 (화면 위에서부터 %)
+    focus: "52% 85%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
+    textY: 7,                    // 필기체 문구: 위아래 위치 (화면 위에서부터 %)
     textX: 0,                    // 필기체 문구: 좌우 위치 (0 = 가운데, 빼기 = 왼쪽, 더하기 = 오른쪽)
     textSize: 100,               // 필기체 문구: 크기 (100 = 기본)
-    labelY: 11,                  // 작은 영문 표시: 위아래 위치
+    labelY: 13,                  // 작은 영문 표시: 위아래 위치
     labelX: 0,                   // 작은 영문 표시: 좌우 위치
     labelSize: 100,              // 작은 영문 표시: 크기 (100 = 기본)
   },
