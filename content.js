@@ -34,7 +34,10 @@ window.INVITATION = {
     mother: "장성희",
     relation: "장녀",            // 장녀 · 차녀 · 딸
     intro: `00년생 • esfp
-사랑스러운 포항 말괄량이
+사랑스러운 포항 여자
+
+겉보기엔 요조숙녀
+알고보면 말괄량이 삐삐
 `,
     photo: "photos/bride-20261118221350.jpg",
   },
