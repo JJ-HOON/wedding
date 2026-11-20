@@ -19,7 +19,10 @@ window.INVITATION = {
     mother: "이수연",
     relation: "장남",            // 장남 · 차남 · 아들
     intro: `98년생 • istj
-젠틀한 부산 상남자`,
+젠틀한 부산 상남자
+
+겉보기엔 테토남,
+신부에겐 애교쟁이`,
     photo: "photos/groom-20261118221149.jpg",
   },
 
@@ -31,7 +34,8 @@ window.INVITATION = {
     mother: "장성희",
     relation: "장녀",            // 장녀 · 차녀 · 딸
     intro: `00년생 • esfp
-사랑스러운 포항 여자`,
+사랑스러운 포항 말괄량이
+`,
     photo: "photos/bride-20261118221350.jpg",
   },
 
