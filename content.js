@@ -30,11 +30,7 @@ window.INVITATION = {
     father: "전동휘",
     mother: "장성희",
     relation: "장녀",            // 장녀 · 차녀 · 딸
-    intro: `그 누가 뭐래도 너무나도 
-예쁜 피아니스트.
-반전매력, 말괄량이 삐삐
-
-00년생 • esfp
+    intro: `00년생 • esfp
 사랑스러운 포항 여자`,
     photo: "photos/bride-20261118221350.jpg",
   },
