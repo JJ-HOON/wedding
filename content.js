@@ -18,9 +18,8 @@ window.INVITATION = {
     father: "정상호",
     mother: "이수연",
     relation: "장남",            // 장남 · 차남 · 아들
-    intro: `항상 내 편이 되어주는 사람.
-부산 상남자, 테토남이지만
-신부에게는 귀여운 애교쟁이`,
+    intro: `98년생 • istj
+젠틀한 부산 상남자`,
     photo: "photos/groom-20261118221149.jpg",
   },
 
@@ -33,7 +32,10 @@ window.INVITATION = {
     relation: "장녀",            // 장녀 · 차녀 · 딸
     intro: `그 누가 뭐래도 너무나도 
 예쁜 피아니스트.
-반전매력, 말괄량이 삐삐`,
+반전매력, 말괄량이 삐삐
+
+00년생 • esfp
+사랑스러운 포항 여자`,
     photo: "photos/bride-20261118221350.jpg",
   },
 
@@ -66,7 +68,13 @@ window.INVITATION = {
     photo: "photos/cover-20261117212515.jpg",
     lettering: "We're getting married",
     label: "Wedding Invitation",
-    focus: "59% 85%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
+    focus: "55% 85%",             // 사진이 잘릴 때의 중심점 "가로% 세로%"
+    textY: 5,                    // 필기체 문구: 위아래 위치 (화면 위에서부터 %)
+    textX: 0,                    // 필기체 문구: 좌우 위치 (0 = 가운데, 빼기 = 왼쪽, 더하기 = 오른쪽)
+    textSize: 100,               // 필기체 문구: 크기 (100 = 기본)
+    labelY: 11,                  // 작은 영문 표시: 위아래 위치
+    labelX: 0,                   // 작은 영문 표시: 좌우 위치
+    labelSize: 100,              // 작은 영문 표시: 크기 (100 = 기본)
   },
 
   /* ── 입장 화면 (청첩장을 열면 먼저 보이는 카메라 화면. 셔터를 누르면 열립니다) ── */
